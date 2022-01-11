@@ -36,10 +36,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Color(0xFFFF5959),
   ];
   List<String> icon = const [
-    'assets/img/angry.png',
-    'assets/img/bad.png',
     'assets/img/happy.png',
     'assets/img/sad.png',
+    'assets/img/bad.png',
+    'assets/img/angry.png',
   ];
   List<String> status = const [
     '좋음',
@@ -49,28 +49,104 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
   String stationName = "종로구";
   List<FineDust> data = [];
-  
+
+  int getStatus(FineDust findDust) {
+    if (findDust.pm10! > 150) {
+      return 3;
+    } else if (findDust.pm10! >= 80) {
+      return 2;
+    } else if (findDust.pm10! >= 30) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getFineDustData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          ],
-        ),
-      ),
+      body: getPage(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          FineDustApi api = FineDustApi();
-          data = await api.getFineDustData("종로구");
-          data.removeWhere((element) =>  element.pm10 == 0);
-          for (final d in data) {
-            print("${d.dataTime} ${d.pm10}");
-          }
-        },
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Widget getPage() {
+    if (data.isEmpty) {
+      return Container();
+    }
+
+    int _status = getStatus(data.first);
+
+    return Container(
+      color: colors[_status],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 60.0),
+          const Text(
+            '현재 위치',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24.0,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12.0),
+          Text(
+            '[$stationName]',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 60.0),
+          Container(
+            width: 250.0,
+            height: 250.0,
+            child: Image.asset(
+              icon[_status],
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 60.0),
+          Text(
+            status[_status],
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 20.0,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20.0),
+          Text(
+            '통합 환경 대기 지수 : ${data.first.khai}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14.0,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void getFineDustData() async {
+    FineDustApi api = FineDustApi();
+    data = await api.getFineDustData(stationName);
+    data.removeWhere((element) => element.pm10 == 0);
+    setState(() {});
   }
 }

@@ -73,8 +73,16 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: getPage(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
+        onPressed: () async {
+          String? location = await Navigator.push(context,
+              MaterialPageRoute(builder: (ctx) => const LocationPage()));
+          if (location != null) {
+            stationName = location;
+            getFineDustData();
+          }
+        },
+        backgroundColor: Colors.black,
+        child: const Icon(Icons.location_on),
       ),
     );
   }
@@ -112,14 +120,14 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const SizedBox(height: 60.0),
           Container(
-            width: 250.0,
-            height: 250.0,
+            width: 220.0,
+            height: 220.0,
             child: Image.asset(
               icon[_status],
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 60.0),
+          const SizedBox(height: 40.0),
           Text(
             status[_status],
             textAlign: TextAlign.center,
@@ -129,13 +137,56 @@ class _MyHomePageState extends State<MyHomePage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 20.0),
+          const SizedBox(height: 10.0),
           Text(
             '통합 환경 대기 지수 : ${data.first.khai}',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 14.0,
               color: Colors.white,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 200.0,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: List.generate(data.length, (idx) {
+                  FineDust fineDust = data[idx];
+                  int _status = getStatus(fineDust);
+
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          fineDust.dataTime!.replaceAll(' ', '\n'),
+                          style: const TextStyle(
+                            fontSize: 10.0,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8.0),
+                        Container(
+                          height: 40.0,
+                          width: 40.0,
+                          child:
+                              Image.asset(icon[_status], fit: BoxFit.contain),
+                        ),
+                        const SizedBox(height: 8.0),
+                        Text(
+                          '${fineDust.pm10}ug/m2',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ],
@@ -148,5 +199,60 @@ class _MyHomePageState extends State<MyHomePage> {
     data = await api.getFineDustData(stationName);
     data.removeWhere((element) => element.pm10 == 0);
     setState(() {});
+  }
+}
+
+class LocationPage extends StatefulWidget {
+  const LocationPage({Key? key}) : super(key: key);
+
+  @override
+  _LocationPageState createState() => _LocationPageState();
+}
+
+class _LocationPageState extends State<LocationPage> {
+  List<String> locations = [
+    "강남구",
+    "강동구",
+    "강북구",
+    "강서구",
+    "관악구",
+    "광진구",
+    "구로구",
+    "금천구",
+    "노원구",
+    "도봉구",
+    "동대문구",
+    "동작구",
+    "마포구",
+    "서대문구",
+    "서초구",
+    "성동구",
+    "성북구",
+    "송파구",
+    "양천구",
+    "영등포구",
+    "용산구",
+    "은평구",
+    "종로구",
+    "중구",
+    "중랑구",
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: ListView(
+        children: List.generate(locations.length, (idx) {
+          return ListTile(
+            onTap: () {
+              Navigator.pop(context, locations[idx]);
+            },
+            title: Text(locations[idx]),
+            trailing: const Icon(Icons.arrow_forward),
+          );
+        }),
+      ),
+    );
   }
 }

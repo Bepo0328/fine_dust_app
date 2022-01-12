@@ -1,9 +1,13 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:fine_dust_app/data/api.dart';
 import 'package:fine_dust_app/data/fine_dust.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_review/in_app_review.dart';
 
 void main() {
   runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  Admob.initialize();
 }
 
 class MyApp extends StatelessWidget {
@@ -80,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
             stationName = location;
             getFineDustData();
           }
+          InAppReview.instance.requestReview();
         },
         backgroundColor: Colors.black,
         child: const Icon(Icons.location_on),
@@ -188,6 +193,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 }),
               ),
             ),
+          ),
+          AdmobBanner(
+              adUnitId: AdmobBanner.testAdUnitId,
+              adSize: AdmobBannerSize.BANNER,
           ),
         ],
       ),
